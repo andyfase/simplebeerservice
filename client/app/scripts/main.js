@@ -78,7 +78,7 @@ $( document ).ready(function() {
   sound = createTimeSeriesGraph('sound');
 
   // Configure Cognito identity pool
-  AWS.config.region = 'us-east-1';
+  AWS.config.region = IOT_REGION;
   var credentials = new AWS.CognitoIdentityCredentials({
       IdentityPoolId: COGNITO_IDENTITY_POOL,
   });
@@ -112,7 +112,7 @@ $( document ).ready(function() {
        endpoint:IOTENDPOINT
      });
      iotdata.getThingShadow(params, function (err, data) {
-       if (err) callback(ErrorLog, null); // an error occurred
+       if (err) callback(err, null); // an error occurred
        else  {
           if (sbsUnits[sbsID]===undefined) {
            var response = JSON.parse(data.payload);
@@ -202,8 +202,9 @@ function initClient(requestUrl) {
     var client = new Paho.MQTT.Client(requestUrl, clientId);
     var connectOptions = {
         onSuccess: function () {
-            console.log('connected');
-            client.subscribe(TOPIC+'/#');
+          var topic = TOPIC + "/#";
+          console.log('connected and listening to ', topic);
+          client.subscribe(topic);//,{onSuccess:()=>{console.log("subscribed ", topic)});          
         },
         useSSL: true,
         timeout: 16,
@@ -214,7 +215,6 @@ function initClient(requestUrl) {
     };
 
     client.onMessageArrived = function (message) {
-       //console.log(message.payloadString);
        var record = JSON.parse(message.payloadString);
 
        if (record.deviceId===undefined) {
