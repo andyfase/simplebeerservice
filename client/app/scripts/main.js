@@ -25,13 +25,16 @@ software license above.
 
 /* CONSTANTS */
 // ============ CHANGE THESE VALUES BELOW =============== //
-
-var COGNITO_IDENTITY_POOL = '<YOUR_COGNITO_IDENTITY_POOL_ID>';
+var COGNITO_IDENTITY_POOL = '<COGNITO_IDENTITY_POOL>';
 var IOT_REGION = 'us-east-1';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
-var TOPIC = 'sbs';
+var TOPIC = 'simpleBeerEdison';
+var THINGNAME = 'simpleBeerEdison';
+var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/delta';
+var APIENDPOINT = '<API ENDPOINT>';
 
 // ============ REST OF CODE =============== //
+var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
 
 // Smoothie Settings
 var MILLIS_PER_PIXEL = 50;
@@ -97,6 +100,68 @@ $( document ).ready(function() {
   });
 
 });
+
+var switchToInput = function () {
+    var sbsID = $(this).attr('sbsID')
+    var span = $(this).children("span");
+    var type = $(this).attr('type');
+    var id = span.attr("id");
+    var $input = $("<input>", {
+        val: $(span).text(),
+        type: "text",
+        sbsID: sbsID,
+        type: type,
+        old_id: id,
+        id: "editInput"
+    });
+    $input.addClass("editInput");
+    // $input.attr("old_id",id);
+    $(span).replaceWith($input);
+    $input.on("blur", switchToSpan);
+    $input.select();
+};
+var switchToSpan = function () {
+    var id = $(this).attr("old_id");
+    var $span = $("<span>", {
+        text: "",//$(this).val(),
+        id: id
+    });
+    $span.addClass("value");
+    $(this).replaceWith($span);
+    $span.on("click", switchToInput);
+};
+
+// this is a test
+var submitInput = function (event) {
+  if(event.keyCode == 13){
+    var data = {
+      sbsID: this.sbsID,
+      type: this.type,
+      value: this.value
+    };
+    $.ajax({
+         type: "POST",
+         url: APIENDPOINT,
+         data: JSON.stringify(data),
+         contentType: "application/json; charset=utf-8",
+         crossDomain: true,
+         dataType: "json",
+         success: function (data, status, jqXHR) {
+             alert(success);
+         },
+         error: function (jqXHR, status) {
+             // error handler
+             console.log(jqXHR);
+             alert('fail' + status.code);
+         }
+      });
+  }
+};
+
+$(document)
+    .on("click", ".editable", switchToInput )
+    .on("keyup", "input", submitInput );
+
 /* FUNCTIONS */
 
 /**
@@ -114,16 +179,25 @@ $( document ).ready(function() {
      iotdata.getThingShadow(params, function (err, data) {
        if (err) callback(err, null); // an error occurred
        else  {
+          console.log('sbsID',sbsID);
+
           if (sbsUnits[sbsID]===undefined) {
            var response = JSON.parse(data.payload);
+           console.log('response:',response)
            sbsUnits[sbsID] = { 'flow': new TimeSeries(), 'sound': new TimeSeries(), 'timestamp': new Date().getTime(), 'meta': response.state.desired};
+           console.log('sbsUnits[sbsID].meta:',sbsUnits[sbsID].meta)
            flow.addTimeSeries(sbsUnits[sbsID]['flow'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
            sound.addTimeSeries(sbsUnits[sbsID]['sound'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
            $('#legend').append('<div id="legend-' + sbsID + '" class="legend-row"><div class="unittype"></div>'+
                   '<div class="colorblock" style="background:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+';"><div class="short">'+sbsUnits[sbsID].meta.short+'</div></div>'+
                   '<div class="location"><span class="placeholder-title">'+sbsID+'</span>'+sbsUnits[sbsID].meta.full+'</div>'+
+                  '</div></div>');
+           $('#stats').append('<div id="legend-' + sbsID + '" class="legend-row"><div class="unittype"></div>'+
                   '<div class="dht"><div class="temp"><span class="placeholder-title">TEMP</span><span class="value" id="temperature-'+sbsID+'-value">0</span>°C</div>'+
                   '<div class="humidity"><span class="placeholder-title">HUMIDITY</span><span class="value" id="humidity-'+sbsID+'-value">0</span>%</div>'+
+                  '<div class="beerlevel"><span class="placeholder-title">BEER LEVEL</span><div class="editable" type="beerlevel" sbsID="'+sbsID+'"><span class="value" id="beerlevel-'+sbsID+'-value">0</span>%<div class="editableIcon ion-android-create"/></div></div>'+
+                  '<div class="brewery"><span class="placeholder-title">BREWERY</span><div class="editable " type="brewery" sbsID="'+sbsID+'"><span class="value" id="brewery-'+sbsID+'-value">Brewery</span><div class="editableIcon ion-android-create"/></div></div>'+
+                  '<div class="beer"><span class="placeholder-title">BEER NAME</span><div class="editable" type="beername" sbsID="'+sbsID+'"><span class="value" id="beername-'+sbsID+'-value">Beer name</span><div class="editableIcon ion-android-create"/></div></div>'+
                   '</div></div>');
             callback(null, null);
           }
@@ -171,7 +245,7 @@ function createTimeSeriesGraph(sensor) {
 
 function resizeCanvas() {
     if (document.documentElement.clientWidth < 800) var a = document.documentElement.clientWidth;
-    else var a = document.documentElement.clientWidth - 700;
+    else var a = document.documentElement.clientWidth - 600;
     var b = document.documentElement.clientHeight - document.documentElement.clientHeight / 2 - 60,
         c = document.getElementById('flow');
     c.height = b, c.width = a;
@@ -195,16 +269,15 @@ function setBackground() {
     bgToggle++
 }
 
+const initMqttClient = (requestUrl, clientId, topic, onMessageArrivedCallback ) => {
 
-// Connect the client, subscribe to the drawing topic, and publish a "hey I connected" message
-function initClient(requestUrl) {
-    var clientId = String(Math.random()).replace('.', '');
     var client = new Paho.MQTT.Client(requestUrl, clientId);
+    console.log('requestUrl: ', requestUrl);
+    console.log('client: ', client);
     var connectOptions = {
         onSuccess: function () {
-          var topic = TOPIC + "/#";
-          console.log('connected and listening to ', topic);
-          client.subscribe(topic);//,{onSuccess:()=>{console.log("subscribed ", topic)});          
+            console.log('connected and listening to ', topic);
+            client.subscribe(topic);
         },
         useSSL: true,
         timeout: 16,
@@ -214,7 +287,21 @@ function initClient(requestUrl) {
         }
     };
 
-    client.onMessageArrived = function (message) {
+    client.onMessageArrived = onMessageArrivedCallback;
+
+    client.onConnectionLost = function (message) {
+        console.log('connection lost!');
+        console.log(message);
+    };
+
+    client.connect(connectOptions);
+};
+
+function initClient(requestUrl) {
+
+  initMqttClient(requestUrl, String(Math.random()).replace('.', ''), TOPIC + "/#",
+    (message) => {
+       console.log(message.payloadString);
        var record = JSON.parse(message.payloadString);
 
        if (record.deviceId===undefined) {
@@ -233,14 +320,30 @@ function initClient(requestUrl) {
            });
          }
        ]);
+    });
 
+    initMqttClient(requestUrl, String(Math.random()).replace('.', ''), SHADOWTOPIC,
+      (message) => {
+         console.log(message.payloadString);
+         var record = JSON.parse(message.payloadString);
 
-    };
-
-    client.onConnectionLost = function (message) {
-        console.log('connection lost!');
-        console.log(message);
-    };
-
-    client.connect(connectOptions);
+         if (record.state.deviceId===undefined) {
+           console.log('Record format incorrect, or missing SBSID.');
+         }
+         async.series([
+           function(callback) {
+             var deviceId = record.state.deviceId;
+             // Add the unit if not already being displayed.
+             if (sbsUnits[deviceId]===undefined) addSBSUnit(deviceId, callback);
+             else callback(null, null);
+           },
+           function(callback) {
+             // For each shadow record, update the appropriate value.
+             var data = record.state.data;
+             for(var item in data) {
+               update(record.state.deviceId, Math.ceil(data[item]), item);
+             };
+           }
+         ]);
+      });
 }

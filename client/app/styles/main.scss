@@ -19,6 +19,19 @@ $icon-font-path: '../fonts/';
 @import "bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
 // endbower
 
+@import "http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css";
+
+@font-face {
+  font-family: 'typicons';
+  src: url("bower_components/typicons.font/src/font/typicons.eot");
+  src: url("bower_components/typicons.font/src/font/typicons.eot?#iefix") format('embedded-opentype'),
+       url("bower_components/typicons.font/src/font/typicons.woff") format('woff'),
+       url("bower_components/typicons.font/src/font/typicons.ttf") format('truetype'),
+       url("bower_components/typicons.font/src/font/typicons.svg#typicons") format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
     margin-bottom: 70px;
     background: 0 0;
@@ -42,7 +55,7 @@ h2 {
     padding-top: 10px
 }
 
-#bg-text, #flow-container h1, #left, #legend, #main, #twitter {
+#bg-text, #flow-container h1, #left, #legend, #main, #twitter, #right {
   position:absolute;
 }
 
@@ -62,7 +75,7 @@ h2 {
 #left {
     background: rgba(15, 15, 15, .8);
     border-right: 2px solid #000;
-    min-width: 420px
+    min-width: 320px
 }
 
 #legend {
@@ -73,15 +86,31 @@ h2 {
 
 #left, #legend {
   left: 0;
-top: 0;
-height: 100%;
+  top: 0;
+  height: 100%;
 }
 
-#twitter {
+#twitter, #right{
     right: 20px;
     top: 0;
     height: 100%;
-    width: 220px
+    width: 200px
+}
+
+#right {
+  background: rgba(15, 15, 15, .8);
+  border-right: 2px solid #000;
+  min-width: 200px
+}
+
+#right .legend-row .dht {
+  top: 50px;
+  position: relative;
+}
+
+.editableIcon {
+  padding-left: 20px;
+  float: right
 }
 
 .legend-row {
@@ -91,22 +120,41 @@ height: 100%;
     z-index: 30
 }
 
-.legend-row .dht>div,
+.legend-row .dht>div {
+    margin-left: 10px
+}
+
 .legend-row>div {
     float: left;
     margin-left: 10px
 }
 
 .legend-row .dht {
-    float: right!important
 }
 
 .legend-row .dht .humidity,
 .legend-row .dht .temp,
+.legend-row .dht .beerlevel,
 .legend-row .location {
     font-size: 18px;
     font-weight: 500;
     margin-top: 0
+}
+
+.legend-row .dht .beer,
+.legend-row .dht .brewery {
+    font-size: 18px;
+    font-weight: 500;
+    margin-top: 0
+}
+
+.legend-row .dht .editable {
+    // @extend .ion-android-create
+    // color: cyan
+}
+
+.legend-row .dht .editInput {
+  color: #ff0000;
 }
 
 .legend-row .location {
@@ -146,7 +194,7 @@ height: 100%;
 
 #main {
     top: 20px;
-    right: 260px;
+    right: 10px;
     z-index: -1
 }
 
@@ -173,7 +221,8 @@ height: 100%;
 #bg-text {
     left: -150px;
     bottom: 15pc;
-    z-index: 11
+    z-index: 11;
+    width: 320px
 }
 
 .vertical-text {
@@ -219,7 +268,7 @@ height: 100%;
         max-width: 25pc
     }
     #legend {
-        min-width: 380px;
+        min-width: 320px;
         padding: 10px
     }
     #main {
@@ -227,6 +276,9 @@ height: 100%;
     }
     #twitter {
         right: 20px
+    }
+    #right {
+      right: 20px
     }
     .graph h1 {
         font-size: 20px;
@@ -251,11 +303,16 @@ height: 100%;
         background: rbga(0, 0, 0, .2);
         height: auto
     }
+    #right{
+      background: rbga(0, 0, 0, .2);
+      height: auto
+    }
 }
 
 @media only screen and (max-width:500px) {
     #left,
     #legend,
+    #right,
     #main {
         position: static
     }
