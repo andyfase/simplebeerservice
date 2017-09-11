@@ -1,14 +1,14 @@
 {
-    "thingName": "sbs",
+    "thingName": "davething",
     "location": "Vancouver",
     "short": "YVR",
-    "region": "us-east-1",
+    "region": "us-west-2",
     "intervals": {
         "rotateMessages": 30000,
         "publish": 1020,
         "autoScroll": 400
     },
-    "topicName": "simpleBeerEdisonTopic",
+    "topicName": "davetopic",
     "logTopic": "simpleBeerEdisonTopicLogs",
     "certs": {
         "privateKey": "/opt/sbs/cert/private.pem.key",

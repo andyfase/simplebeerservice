@@ -29,9 +29,9 @@ const options = commandLineArgs(optionDefinitions);
 var data = [];
 try {
   var device = awsIot.thingShadow({
-    keyPath: "cert/private.pem.key",
-    certPath: "cert/certificate.pem.crt",
-    caPath: "cert/root.pem.crt",
+    keyPath: "device/cert/private.pem.key",
+    certPath: "device/cert/certificate.pem.crt",
+    caPath: "device/cert/root.pem.crt",
     clientId: options.unitid,
     region: options.region
   });
@@ -69,7 +69,7 @@ try {
     } else if (delay>20) {
       delay = 0;
     }
-    return 0;
+    return 1;
   }
 
   /** Generates a random new value.
@@ -103,7 +103,7 @@ try {
     temp = getRandomValue(temp, 14, 24, 2);
     humidity = getRandomValue(humidity, 40, 70, 5);
     sound = getRandomValue(sound, 50, 250, 80);
-    populateData('Flow', getRandomFlowCount());
+    populateData('Flow', getRandomFlowCount() * .001);
     populateData('Temperature', temp);
     populateData('Humidity', humidity);
     populateData('Sound', sound);
@@ -152,7 +152,7 @@ try {
            }else{
              console.log("token:",clientTokenUpdate)
              console.log("Connected to AWS IoT.");
-             setInterval(run, 1000);
+             setInterval(run, 100);
              setInterval(function() {
                console.log("Message: ",messages[Math.floor(Math.random()*4)]);
              },10000);

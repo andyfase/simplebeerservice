@@ -260,3 +260,16 @@ Awesome. Now you know how to work with Gulp! Next, let's open up **app/scripts/m
   ```
 
 4. Serverless will output an S3 link. Put that S3 link in your browser and check out your static site!!
+
+
+### IoT / Kinesis Backend
+TODO
+
+```bash
+# Run from the root of the repo.
+STACK_NAME=sbs-stack-name \
+TEMPLATE=kinesis \
+PARAMS=dave-teststack.json \
+OP=create-stack; \
+aws cloudformation $OP --capabilities CAPABILITY_IAM --stack-name $STACK_NAME --template-body file://cfn/$TEMPLATE/template.yaml --parameters file://cfn/$TEMPLATE/parameters/$PARAMS
+```
