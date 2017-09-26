@@ -48,6 +48,7 @@ Resources:
             - |-
               console.log('Loading function');
               var AWS = require('aws-sdk');
+              var MILLILS_TO_L = 0.001;
 
               exports.handler = function(event, context, callback) {
 
@@ -65,7 +66,7 @@ Resources:
                       if (!(thingName in results)) {
                         results[thingName] = 0.0;
                       }
-                      results[thingName] += data.value;
+                      results[thingName] += data.value * MILLILS_TO_L;
                     }
                   }
                 }
@@ -97,7 +98,7 @@ Resources:
                       // Update the thing shadow.
                       delete shadow.state.delta;
 
-                      shadow.state.desired.kegdata.usage -= results[thing_name];
+                      shadow.state.desired.kegdata.usage += results[thing_name];
 
                       if (shadow.state.desired.kegdata.usage < 0) {
                         console.error('Negative beer level set for ' + thing_name + ' . Calibration required?');
