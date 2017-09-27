@@ -29,9 +29,8 @@ var COGNITO_IDENTITY_POOL = '<COGNITO_IDENTITY_POOL>';
 var IOT_REGION = 'us-east-1';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
 var TOPIC = 'simpleBeerEdison';
-var THINGNAME = 'simpleBeerEdison';
-var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/delta';
-var APIENDPOINT = '<API ENDPOINT>';
+var THINGNAME = 'simpleBeerEdisonThing';
+var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/documents';
 
 // ============ REST OF CODE =============== //
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
@@ -74,7 +73,6 @@ $(document).keypress(function(e) {
 $( document ).ready(function() {
 
   window.addEventListener('resize', resizeCanvas, !1);
-
   resizeCanvas('');
 
   flow = createTimeSeriesGraph('flow');
@@ -101,66 +99,6 @@ $( document ).ready(function() {
 
 });
 
-var switchToInput = function () {
-    var sbsID = $(this).attr('sbsID')
-    var span = $(this).children("span");
-    var type = $(this).attr('type');
-    var id = span.attr("id");
-    var $input = $("<input>", {
-        val: $(span).text(),
-        type: "text",
-        sbsID: sbsID,
-        type: type,
-        old_id: id,
-        id: "editInput"
-    });
-    $input.addClass("editInput");
-    // $input.attr("old_id",id);
-    $(span).replaceWith($input);
-    $input.on("blur", switchToSpan);
-    $input.select();
-};
-var switchToSpan = function () {
-    var id = $(this).attr("old_id");
-    var $span = $("<span>", {
-        text: "",//$(this).val(),
-        id: id
-    });
-    $span.addClass("value");
-    $(this).replaceWith($span);
-    $span.on("click", switchToInput);
-};
-
-// this is a test
-var submitInput = function (event) {
-  if(event.keyCode == 13){
-    var data = {
-      sbsID: this.sbsID,
-      type: this.type,
-      value: this.value
-    };
-    $.ajax({
-         type: "POST",
-         url: APIENDPOINT,
-         data: JSON.stringify(data),
-         contentType: "application/json; charset=utf-8",
-         crossDomain: true,
-         dataType: "json",
-         success: function (data, status, jqXHR) {
-             alert(success);
-         },
-         error: function (jqXHR, status) {
-             // error handler
-             console.log(jqXHR);
-             alert('fail' + status.code);
-         }
-      });
-  }
-};
-
-$(document)
-    .on("click", ".editable", switchToInput )
-    .on("keyup", "input", submitInput );
 
 /* FUNCTIONS */
 
@@ -188,17 +126,36 @@ $(document)
            console.log('sbsUnits[sbsID].meta:',sbsUnits[sbsID].meta)
            flow.addTimeSeries(sbsUnits[sbsID]['flow'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
            sound.addTimeSeries(sbsUnits[sbsID]['sound'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
-           $('#legend').append('<div id="legend-' + sbsID + '" class="legend-row"><div class="unittype"></div>'+
-                  '<div class="colorblock" style="background:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+';"><div class="short">'+sbsUnits[sbsID].meta.short+'</div></div>'+
-                  '<div class="location"><span class="placeholder-title">'+sbsID+'</span>'+sbsUnits[sbsID].meta.full+'</div>'+
-                  '</div></div>');
-           $('#stats').append('<div id="legend-' + sbsID + '" class="legend-row"><div class="unittype"></div>'+
-                  '<div class="dht"><div class="temp"><span class="placeholder-title">TEMP</span><span class="value" id="temperature-'+sbsID+'-value">0</span>°C</div>'+
-                  '<div class="humidity"><span class="placeholder-title">HUMIDITY</span><span class="value" id="humidity-'+sbsID+'-value">0</span>%</div>'+
-                  '<div class="beerlevel"><span class="placeholder-title">BEER LEVEL</span><div class="editable" type="beerlevel" sbsID="'+sbsID+'"><span class="value" id="beerlevel-'+sbsID+'-value">0</span>%<div class="editableIcon ion-android-create"/></div></div>'+
-                  '<div class="brewery"><span class="placeholder-title">BREWERY</span><div class="editable " type="brewery" sbsID="'+sbsID+'"><span class="value" id="brewery-'+sbsID+'-value">Brewery</span><div class="editableIcon ion-android-create"/></div></div>'+
-                  '<div class="beer"><span class="placeholder-title">BEER NAME</span><div class="editable" type="beername" sbsID="'+sbsID+'"><span class="value" id="beername-'+sbsID+'-value">Beer name</span><div class="editableIcon ion-android-create"/></div></div>'+
-                  '</div></div>');
+           $('#legend').append(
+                  '<div id="legend-' + sbsID + '" class="legend-block">'+
+                    '<div id="legend-row">'+
+                      '<div id="colorblock" style="background:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+';">'+
+                      '</div>'+
+                      '<div id="legend-location">'+
+                        '<div id="short">'+sbsUnits[sbsID].meta.short+'</div>'+
+                        '<div id="legend-temp-humidity">'+
+                          '<div id="temp"><span class="placeholder-title">TEMP</span><span class="value"><div id="temperature-'+sbsID+'-value">0</div>°C</span></div>'+
+                          '<div id="humidity"><span class="placeholder-title">HUMIDITY</span><span class="value"><div id="humidity-'+sbsID+'-value">0</div>%</span></div>'+
+                        '</div>'+
+                      '</div>'+
+                      '<div id="dht">'+
+                        '<div id="description-row">'+
+                          '<div id="beer-logo"><img class="beer-logo" id="beerlogo-'+sbsID+'-value"></img></div>'+
+                          '<div id="beer-brewery">'+
+                            '<div id="beer"><span class="placeholder-title">BEER NAME</span><span class="value" id="beername-'+sbsID+'-value">Beer name</span></div>'+
+                            // '<div class="location"><img class="country-flag" src="http://www.geonames.org/flags/x/'+sbsUnits[sbsID].meta.location.toLowerCase()+'.gif"/></div>'+
+                            '<div id="brewery"><span class="placeholder-title">BREWERY</span><span class="value" id="brewery-'+sbsID+'-value">Brewery</span></div>'+
+                          '</div>' +
+                        '</div>'+
+                        '<div id="beerlevel"><span class="placeholder-title">BEER LEVEL</span>'+
+                          '<div id="progress">' +
+                            '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuemin="0" aria-valuemax="100">25%</div>' +
+                          '</div>' +
+                        '</div>'+
+                      '</div>'+
+                    '</div>'+
+                  '</div>');
+
             callback(null, null);
           }
         }
@@ -227,9 +184,16 @@ function update(sbsID, value, type) {
 
     if (type==='sound'||type==='flow') {
       sbsUnits[sbsID][type].append(Date.now(), value);
+    } else if (type==='beerlevel') {
+      // debugger;
+      $('#' + type + '-'+sbsID+'-value').attr("aria-valuenow",value);
+      $('#' + type + '-'+sbsID+'-value').width(value + "%");
+      $('#' + type + '-'+sbsID+'-value').html(value + "%");
     } else {
       $('#' + type + '-'+sbsID+'-value').html(value);
     }
+
+    $('#' + 'beerlogo' + '-' + sbsID + '-value').attr("src","https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Beer_mug.svg/1024px-Beer_mug.svg.png");
 
 }
 
@@ -237,20 +201,55 @@ function update(sbsID, value, type) {
  * Create a new SmootheChart object based on the defined characteristics in the CONSTANTS section.
  * @param sensor {string} Name of the sensor.
  */
-function createTimeSeriesGraph(sensor) {
-    var smoothie = new SmoothieChart({ millisPerPixel: MILLIS_PER_PIXEL, maxValueScale: MAX_VAL_SCALE, minValueScale: MIN_VAL_SCALE, grid: { strokeStyle: colorToStyle(colors.gray.rgb,colors.gray.alpha), fillStyle: colorToStyle(colors.gray.rgb,colors.gray.alpha), lineWidth: LINE_WIDTH, millisPerLine: MILLIS_PER_LINE, verticalSections: VERTICAL_SECTIONS } });
+  function createTimeSeriesGraph(sensor) {
+    var smoothie = new SmoothieChart({
+      millisPerPixel: MILLIS_PER_PIXEL,
+      maxValueScale: MAX_VAL_SCALE,
+      minValueScale: MIN_VAL_SCALE,
+      // responsive: true, // this slows down Chrome
+      grid: {
+        strokeStyle: colorToStyle(colors.gray.rgb,colors.gray.alpha),
+        fillStyle: colorToStyle(colors.gray.rgb,colors.gray.alpha),
+        lineWidth: LINE_WIDTH,
+        millisPerLine: MILLIS_PER_LINE,
+        verticalSections: VERTICAL_SECTIONS
+      } });
+
     smoothie.streamTo(document.getElementById(sensor), SMOOTHIE_SPEED);
     return smoothie;
 }
 
 function resizeCanvas() {
-    if (document.documentElement.clientWidth < 800) var a = document.documentElement.clientWidth;
-    else var a = document.documentElement.clientWidth - 600;
-    var b = document.documentElement.clientHeight - document.documentElement.clientHeight / 2 - 60,
-        c = document.getElementById('flow');
-    c.height = b, c.width = a;
+    var c = document.getElementById('flow');
     var d = document.getElementById('sound');
-    d.width = a, d.height = b
+
+    var windowsWidth = window.innerWidth;
+    var windowsHeight = window.innerHeight;
+    var leftPanelWidth = $("#left-panel").innerWidth();
+    var graphPanelWidth = $("#graph-panel").innerWidth();
+
+    var navHeight = $("#navbar").innerHeight();
+    var graphPanelHeight = windowsHeight - navHeight - 350;
+
+    if(windowsWidth<576){
+      var rightPanelWidth = windowsWidth - 50;
+      var canvasWidth=graphPanelWidth;
+      var canvasHeight=graphPanelHeight - 50;
+      // $("#graph-panel").attr("position","flex");
+    } else {
+      var rightPanelWidth = windowsWidth - leftPanelWidth - 50;
+      var canvasWidth=graphPanelWidth/2;
+      var canvasHeight=graphPanelHeight;
+    }
+
+    c.width = canvasWidth;
+    d.width = canvasWidth;
+
+    c.height = canvasHeight;
+    d.height = canvasHeight;
+
+    console.log(c.height, c.width);
+    console.log(d.height, d.width);
 
     $('.timeline-Widget').height = document.documentElement.clientHeight;
 }
@@ -272,8 +271,8 @@ function setBackground() {
 const initMqttClient = (requestUrl, clientId, topic, onMessageArrivedCallback ) => {
 
     var client = new Paho.MQTT.Client(requestUrl, clientId);
-    console.log('requestUrl: ', requestUrl);
-    console.log('client: ', client);
+    // console.log('requestUrl: ', requestUrl);
+    // console.log('client: ', client);
     var connectOptions = {
         onSuccess: function () {
             console.log('connected and listening to ', topic);
@@ -303,7 +302,7 @@ function initClient(requestUrl) {
     (message) => {
        console.log(message.payloadString);
        var record = JSON.parse(message.payloadString);
-
+      //  console.log("record:",record);
        if (record.deviceId===undefined) {
          console.log('Record format incorrect, or missing SBSID.');
        }
@@ -324,24 +323,29 @@ function initClient(requestUrl) {
 
     initMqttClient(requestUrl, String(Math.random()).replace('.', ''), SHADOWTOPIC,
       (message) => {
-         console.log(message.payloadString);
+        // debugger;
+        //  console.log(message.payloadString);
          var record = JSON.parse(message.payloadString);
 
-         if (record.state.deviceId===undefined) {
+         var deviceId = record.current.state.desired.deviceId;
+
+         if (deviceId===undefined) {
            console.log('Record format incorrect, or missing SBSID.');
          }
          async.series([
            function(callback) {
-             var deviceId = record.state.deviceId;
+            //  debugger;
+             var deviceId = record.current.state.desired.deviceId;
              // Add the unit if not already being displayed.
              if (sbsUnits[deviceId]===undefined) addSBSUnit(deviceId, callback);
              else callback(null, null);
            },
            function(callback) {
+            //  debugger;
              // For each shadow record, update the appropriate value.
-             var data = record.state.data;
+             var data = record.current.state.desired.data;
              for(var item in data) {
-               update(record.state.deviceId, Math.ceil(data[item]), item);
+               update(record.current.state.desired.deviceId, Math.ceil(data[item]), item);
              };
            }
          ]);
