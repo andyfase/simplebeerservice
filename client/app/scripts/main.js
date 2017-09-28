@@ -25,7 +25,7 @@ software license above.
 
 /* CONSTANTS */
 // ============ CHANGE THESE VALUES BELOW =============== //
-var COGNITO_IDENTITY_POOL = '<COGNITO_IDENTITY_POOL>';
+var COGNITO_IDENTITY_POOL = '<ID>';
 var IOT_REGION = 'us-east-1';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
 var TOPIC = 'simpleBeerEdison';
@@ -50,6 +50,8 @@ var iot;
 
 // Smoothie Chart objects for flow and sound sensor data.
 var flow = null, sound = null;
+
+var elementCount=0;
 
 // Default colour scheme for the smoothie graph.
 var colors = {
@@ -126,6 +128,9 @@ $( document ).ready(function() {
            console.log('sbsUnits[sbsID].meta:',sbsUnits[sbsID].meta)
            flow.addTimeSeries(sbsUnits[sbsID]['flow'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
            sound.addTimeSeries(sbsUnits[sbsID]['sound'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
+           if(elementCount%2==0){
+            //  $('#legend').append('<div class="w-100"></div>');
+           }
            $('#legend').append(
                   '<div id="legend-' + sbsID + '" class="legend-block">'+
                     '<div id="legend-row">'+
@@ -155,7 +160,7 @@ $( document ).ready(function() {
                       '</div>'+
                     '</div>'+
                   '</div>');
-
+            elementCount++;
             callback(null, null);
           }
         }
@@ -220,38 +225,60 @@ function update(sbsID, value, type) {
 }
 
 function resizeCanvas() {
-    var c = document.getElementById('flow');
-    var d = document.getElementById('sound');
+
+    var rightPanelHeight = $("#navbar").position().top;
+    var legendExpectedHeight = rightPanelHeight * 0.6;
+
+    var graphPanelHeight = rightPanelHeight - legendExpectedHeight;
 
     var windowsWidth = window.innerWidth;
-    var windowsHeight = window.innerHeight;
-    var leftPanelWidth = $("#left-panel").innerWidth();
-    var graphPanelWidth = $("#graph-panel").innerWidth();
+    var rightPanelMargin = 50;
 
-    var navHeight = $("#navbar").innerHeight();
-    var graphPanelHeight = windowsHeight - navHeight - 350;
+    if(windowsWidth>576){
 
-    if(windowsWidth<576){
-      var rightPanelWidth = windowsWidth - 50;
-      var canvasWidth=graphPanelWidth;
-      var canvasHeight=graphPanelHeight - 50;
-      // $("#graph-panel").attr("position","flex");
+      $("#legend").css("min-height", function(){
+        return legendExpectedHeight;
+      });
+
+      var leftPanelWidth = $("#left-panel").innerWidth();
+      var rightPanelWidth = windowsWidth - leftPanelWidth - rightPanelMargin;
+
+      var canvasWidth = rightPanelWidth/2;
+
+      $("#flow").attr("width", canvasWidth);
+      $("#sound").attr("width", canvasWidth);
+
+      var h1Height = $("#flow-h1").outerHeight(true);
+      var canvasHeight = graphPanelHeight - h1Height;
+
+      $("#flow").attr("height", canvasHeight);
+      $("#sound").attr("height", canvasHeight);
+
+      console.log(canvasWidth, canvasHeight);
+
     } else {
-      var rightPanelWidth = windowsWidth - leftPanelWidth - 50;
-      var canvasWidth=graphPanelWidth/2;
-      var canvasHeight=graphPanelHeight;
+
+      $("#legend").css("min-height", function(){
+        return 0;
+      });
+
+      var rightPanelWidth = windowsWidth - rightPanelMargin;
+      var canvasWidth = rightPanelWidth;
+
+      $("#flow").attr("width", canvasWidth);
+      $("#sound").attr("width", canvasWidth);
+
+      var h1Height = $("#flow-h1").outerHeight(true);
+      var canvasHeight = graphPanelHeight/2 - h1Height;
+
+      $("#flow").attr("height", canvasHeight);
+      $("#sound").attr("height", canvasHeight);
+
+      console.log(canvasWidth, canvasHeight);
+
     }
 
-    c.width = canvasWidth;
-    d.width = canvasWidth;
-
-    c.height = canvasHeight;
-    d.height = canvasHeight;
-
-    console.log(c.height, c.width);
-    console.log(d.height, d.width);
-
-    $('.timeline-Widget').height = document.documentElement.clientHeight;
+    $("#twtimeline").attr("height", $(window).height() - $("#logo-title").height());
 }
 
 function setBackground() {
@@ -300,7 +327,7 @@ function initClient(requestUrl) {
 
   initMqttClient(requestUrl, String(Math.random()).replace('.', ''), TOPIC + "/#",
     (message) => {
-       console.log(message.payloadString);
+      //  console.log(message.payloadString);
        var record = JSON.parse(message.payloadString);
       //  console.log("record:",record);
        if (record.deviceId===undefined) {

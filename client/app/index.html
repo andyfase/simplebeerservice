@@ -52,61 +52,10 @@ software license above.
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
       <!-- <div class="container"> -->
-        <nav id="navbar" class="navbar navbar-expand-lg fixed-bottom navbar-light bg-light" style="background-color:#222">
-          <a class="navbar-brand" href="#">Simple Beer Service</a>
-          <div id=navbar class="collapse navbar-collapse">
-            <ul class="navbar-nav">
-              <li class="nav-item active">
-                <a class="nav-link" href=#>Dashboard</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href=https://medium.com/aws-activate-startup-blog/internet-of-beer-introducing-simple-beer-service-63c987037e9e target=_blank>The SBS Story</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href=https://github.com/awslabs/simplebeerservice target=_blank>Build Your Own</a>
-              </li>
-            </ul>
-          </div>
-        </nav>
+
       <!-- </div> -->
 
-      <!-- <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Features</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Pricing</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" href="#">Disabled</a>
-            </li>
-          </ul>
-        </div>
-      </nav> -->
-
-      <!-- <nav class="navbar navbar-inverse navbar-fixed-bottom">
-        <div class=container>
-          <div class=navbar-header>
-            <button type=button class="navbar-toggle collapsed" data-toggle=collapse data-target=#navbar aria-expanded=false aria-controls=navbar> <span class=sr-only>Toggle navigation</span> <span class=icon-bar></span> <span class=icon-bar></span> <span class=icon-bar></span> </button>            <a class=navbar-brand href=#>Simple Beer Service</a> </div>
-          <div id=navbar class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-              <li class=active> <a href=#>Dashboard</a> </li>
-              <li> <a href=https://medium.com/aws-activate-startup-blog/internet-of-beer-introducing-simple-beer-service-63c987037e9e target=_blank>The SBS Story</a> </li>
-              <li> <a href=https://github.com/awslabs/simplebeerservice target=_blank>Build Your Own</a> </li>
-            </ul>
-          </div>
-        </div>
-      </nav> -->
-      <div class="container-fluid">
+      <div class="container-fluid" id="main-body">
 
       <div class="row">
         <div id="left-panel">
@@ -116,7 +65,7 @@ software license above.
             <h2>Beer = Good, <br> Streaming Beer = Better!</h2>
           </div>
           <div id=twitter>
-            <div class=twitter> <a id=twtimeline class=twitter-timeline href=https://twitter.com/hashtag/simplebeerservice height=900 data-widget-id=607332630770507776 data-chrome="nofooter noborders transparent noscrollbar">#simplebeerservice Tweets</a>
+            <div class=twitter> <a id=twtimeline class=twitter-timeline href=https://twitter.com/hashtag/simplebeerservice height=800 data-widget-id=607332630770507776 data-chrome="nofooter noborders transparent noscrollbar">#simplebeerservice Tweets</a>
               <script>
                 ! function(d, s, id) {
                   var js, fjs = d.getElementsByTagName(s)[0],
@@ -140,19 +89,36 @@ software license above.
           <!-- </div> -->
           <div id="graph-panel">
             <div id=flow-container>
-              <h1>Beer Flow</h1>
+              <h1 id="flow-h1">Beer Flow</h1>
               <canvas id=flow></canvas>
-              <!-- <canvas id=flow></canvas> -->
             </div>
             <div id=sound-container>
-              <h1>Ambient Sound</h1>
-              <!-- <canvas id=sound></canvas> -->
+              <h1 id="sound-h1">Ambient Sound</h1>
               <canvas id=sound></canvas>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <footer class="footer">
+      <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom" style="background-color:#222">
+        <a class="navbar-brand" href="#">Simple Beer Service</a>
+        <div id=navbar class="collapse navbar-collapse">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a class="nav-link" href=#>Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href=https://medium.com/aws-activate-startup-blog/internet-of-beer-introducing-simple-beer-service-63c987037e9e target=_blank>The SBS Story</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href=https://github.com/awslabs/simplebeerservice target=_blank>Build Your Own</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </footer>
     <!-- </div> -->
 
     <!-- Bootstrap core JavaScript==================================================- ->

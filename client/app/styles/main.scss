@@ -28,7 +28,7 @@ html {
 }
 
 body {
-  margin-bottom: 70px;
+  // margin-bottom: 70px;
   background: 0 0;
   font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
   color: #fff;
@@ -64,6 +64,10 @@ h2 {
 
 .wrapper {
   margin: 0;
+}
+
+#navbar{
+  // position:relative;
 }
 
 #left-panel {
@@ -104,11 +108,12 @@ h2 {
 
     .legend-block {
       @extend .col-12;
-      @extend .col-sm-12;
-      @extend .col-md-12;
-      @extend .col-lg-12;
-      @extend .col-xl-12;
+      @extend .col-sm-6;
+      @extend .col-md-6;
+      @extend .col-lg-6;
+      @extend .col-xl-6;
 
+      @extend .align-self-start;
       @extend .card;
       @extend .border-light;
       @extend .bg-dark;
@@ -150,11 +155,11 @@ h2 {
         }
 
         #legend-location{
-          @extend .col-3;
-          @extend .col-sm-3;
-          @extend .col-md-3;
-          @extend .col-lg-3;
-          @extend .col-xl-3;
+          @extend .col-4;
+          @extend .col-sm-4;
+          @extend .col-md-4;
+          @extend .col-lg-4;
+          @extend .col-xl-4;
           @extend .border;
           @extend .m-0;
           @extend .m-sm-0;
@@ -190,11 +195,11 @@ h2 {
 
             #humidity,
             #temp {
-              @extend .m-1;
-              @extend .m-sm-1;
-              @extend .m-md-1;
-              @extend .m-lg-1;
-              @extend .m-xl-1;
+              @extend .m-0;
+              @extend .m-sm-0;
+              @extend .m-md-0;
+              @extend .m-lg-0;
+              @extend .m-xl-0;
               @extend .p-0;
               @extend .p-sm-1;
               @extend .p-md-1;
@@ -221,23 +226,23 @@ h2 {
               }
               @include media-breakpoint-up(sm) {
                 .placeholder-title {
-                  font-size: 8px;
+                  font-size: 10px;
                   display: block;
                 }
 
                 .value {
-                  font-size: 10px;
+                  font-size: 12px;
                   display: block;
                 }
               }
               @include media-breakpoint-up(lg) {
                 .placeholder-title {
-                  font-size: 12px;
+                  font-size: 10px;
                   display: block;
                 }
 
                 .value {
-                  font-size: 16px;
+                  font-size: 14px;
                   display: flex;
                 }
               }
@@ -255,10 +260,15 @@ h2 {
 
             #beer-logo{
               @extend .col-2;
-              max-width: 6vw;
+              @extend .pt-1;
+              @extend .pt-sm-1;
+              @extend .pt-md-1;
+              @extend .pt-lg-1;
+              @extend .pt-xl-1;
 
               .beer-logo{
                 @extend .img-fluid;
+                max-width: 3vw;
               }
             }
 
@@ -269,6 +279,25 @@ h2 {
               #brewery {
                 .placeholder-title {
                   @extend .d-none;
+                }
+
+                @include media-breakpoint-down(sm) {
+                  .value {
+                    font-size: 10px;
+                    display: block;
+                  }
+                }
+                @include media-breakpoint-up(sm) {
+                  .value {
+                    font-size: 12px;
+                    display: block;
+                  }
+                }
+                @include media-breakpoint-up(lg) {
+                  .value {
+                    font-size: 14px;
+                    display: flex;
+                  }
                 }
               }
 
@@ -290,11 +319,11 @@ h2 {
             @extend .p-md-0;
             @extend .p-lg-0;
             @extend .p-xl-0;
-            @extend .pt-2;
-            @extend .pt-sm-2;
-            @extend .pt-md-2;
-            @extend .pt-lg-2;
-            @extend .pt-xl-2;
+            @extend .pt-1;
+            @extend .pt-sm-1;
+            @extend .pt-md-1;
+            @extend .pt-lg-1;
+            @extend .pt-xl-1;
 
             .placeholder-title {
               @extend .d-none;
@@ -317,6 +346,7 @@ h2 {
                 @extend .progress-bar;
                 @extend .progress-bar-striped;
                 @extend .progress-bar-animated;
+                @extend .align-middle;
                 height: 4vh;
               }
             }
@@ -327,12 +357,14 @@ h2 {
   }
 
   #graph-panel {
-    bottom: 10vh;
+    // bottom: 10vh;
+    // position: fixed;
+    position: relative;
+    // bottom: 0;
     @extend .row;
 
     #flow-container,
     #sound-container {
-      @extend .mh-100;
       @extend .col-12;
       @extend .col-sm-6;
       @extend .col-md-6;
