@@ -22,20 +22,35 @@ Resources:
               var AWS = require('aws-sdk');
 
               exports.handler = function(event, context, callback) {
-                var iotdata = new AWS.IotData({endpoint: '${endpoint}'});
+                try {
+                  var iotdata = new AWS.IotData({endpoint: '${endpoint}'});
 
-                console.log('event', JSON.stringify(event, null, 2));
+                  console.log('event', JSON.stringify(event, null, 2));
 
-                if (event.keg_capacity_liters < 5) {
+                  if (event.keg_capacity_liters < 5) {
+                    var error = {
+                      errorCode: 400,
+                      errorMessage: 'This is a handled error'
+                    };
+                    context.done(JSON.stringify(error));
+
+                  } else if (event.keg_capacity_liters < 10) {
+
+                    throw new Error('This is unhandled');
+
+                  } else {
+                    context.done(null, {result: 'success'});
+                  }
+
+                } catch(e) {
                   var error = {
-                    errorCode: 400,
-                    errorMessage: "The requested resource was not found"
+                    errorCode: 500,
+                    errorMessage: 'Error: ' + e.message
                   };
                   context.done(JSON.stringify(error));
-                } else {
-                  context.done(null, {result: 'success'});
                 }
               };
+
             - endpoint: { Ref: IotEndpoint }
 
       Description: A sbs-keg-reset function
@@ -220,6 +235,18 @@ Resources:
                     "errorCode": $errorMessageObj.errorCode,
                     "errorMessage": "$errorMessageObj.errorMessage"
                   }
+          - StatusCode: 500
+            SelectionPattern: '.*"errorCode":500.*'
+            ResponseTemplates:
+              "application/json":
+                "Fn::Sub": |
+                  #set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+                  #set ($bodyObj = $util.parseJson($input.body))
+
+                  {
+                    "errorCode": $errorMessageObj.errorCode,
+                    "errorMessage": "$errorMessageObj.errorMessage"
+                  }
 
       RequestModels:
         "application/json": { Ref: KegResetModel }
@@ -228,6 +255,7 @@ Resources:
       MethodResponses:
         - StatusCode: 200
         - StatusCode: 400
+        - StatusCode: 500
 
 Outputs:
   RootUrl:
