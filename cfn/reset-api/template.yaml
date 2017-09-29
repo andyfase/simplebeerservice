@@ -157,6 +157,7 @@ Resources:
         properties:
           keg_capacity_liters:
             type: number
+            minimum: 0
           beer_name:
             type: string
           beer_brewery:
