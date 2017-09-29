@@ -27,20 +27,50 @@ Resources:
 
                   console.log('event', JSON.stringify(event, null, 2));
 
-                  if (event.keg_capacity_liters < 5) {
-                    var error = {
-                      errorCode: 400,
-                      errorMessage: 'This is a handled error'
-                    };
-                    context.done(JSON.stringify(error));
 
-                  } else if (event.keg_capacity_liters < 10) {
+                  var params = {
+                    thingName: event.sbs_thing_name
+                  };
+                  iotdata.getThingShadow(params, function(err, data) {
+                    if (err) {
+                      console.log(err, err.stack);
+                      var error = {
+                        errorCode: 400,
+                        errorMessage: 'error: ' + err
+                      };
+                      context.done(JSON.stringify(error));
+                    } else {
 
-                    throw new Error('This is unhandled');
+                      let shadow = JSON.parse(data.payload);
+                      delete shadow.state.delta;
 
-                  } else {
-                    context.done(null, {result: 'success'});
-                  }
+                      shadow.state.desired.kegdata.usage = 0;
+                      shadow.state.desired.kegdata.size = event.keg_capacity_liters;
+                      shadow.state.desired.kegdata.name = event.beer_name;
+                      shadow.state.desired.kegdata.brewery = event.beer_brewery;
+                      shadow.state.desired.kegdata.desc = event.beer_description;
+                      shadow.state.desired.kegdata.beer_logo_url = event.beer_logo_url;
+                      var params = {
+                        payload: JSON.stringify(shadow),
+                        thingName: event.sbs_thing_name
+                      };
+
+                      iotdata.updateThingShadow(params, function(err, data) {
+                        if (err) {
+                          var error = {
+                            errorCode: 400,
+                            errorMessage: 'error: ' + err
+                          };
+                          context.done(JSON.stringify(error));
+                        } else {
+                          console.log('Updated shadow successfully for ' + event.sbs_thing_name, JSON.stringify(data, null, 2));
+                          context.done(null, {result: 'Successful update for ' + event.sbs_thing_name});
+                        }
+                      });
+
+                    }
+                  });
+
 
                 } catch(e) {
                   var error = {
@@ -80,6 +110,11 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "iot:GetThingShadow"
+                  - "iot:UpdateThingShadow"
+                Resource: "*"
       # ManagedPolicyArns: ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"]
 
   GatewayApi:
@@ -184,6 +219,8 @@ Resources:
         title: SbsKegResetSchema
         type: object
         properties:
+          sbs_thing_name:
+            type: string
           keg_capacity_liters:
             type: number
             minimum: 0
@@ -193,7 +230,9 @@ Resources:
             type: string
           beer_description:
             type: string
-        required: [keg_capacity_liters, beer_name, beer_brewery, beer_description]
+          beer_logo_url:
+            type: string
+        required: [sbs_thing_name, keg_capacity_liters, beer_name, beer_brewery, beer_description]
 
   RequestValidator:
     Type: "AWS::ApiGateway::RequestValidator"
@@ -275,7 +314,7 @@ Outputs:
       "Fn::Join":
         - ""
         - - 'curl -H "Content-Type: application/json" -H "Accept: application/json" '
-          - '-X POST -d ''{"keg_capacity_liters":20, "beer_name":"Blanche de Chambly", "beer_brewery": "Unibroue", "beer_description": "Glorious."}'' '
+          - '-X POST -d ''{"sbs_thing_name": "thing", "keg_capacity_liters":20, "beer_name":"Blanche de Chambly", "beer_brewery": "Unibroue", "beer_description": "Glorious.",  "beer_logo_url": "http://site.com/logo.png"}'' '
           - "https://"
           - { Ref: "GatewayApi" }
           - .execute-api.
