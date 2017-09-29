@@ -6,29 +6,43 @@ Parameters:
     Type: String
     MinLength: '2'
 
+  IotEndpoint:
+    Type: String
+    MinLength: 2
+
 Resources:
   GatewayLambda:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         ZipFile:
-          "Fn::Sub": |
-            import json
-            import logging
-            logging.basicConfig()
-            logger = logging.getLogger(__name__)
-            logger.setLevel(logging.INFO)
+          "Fn::Sub":
+            - |-
+              console.log('Loading function');
+              var AWS = require('aws-sdk');
 
-            def handler(event, context):
-                logger.info('Event: ' + json.dumps(event))
-                logger.info('Context: ' + str(dir(context)))
-                return {'sbs-keg-reset': event}
+              exports.handler = function(event, context, callback) {
+                var iotdata = new AWS.IotData({endpoint: '${endpoint}'});
+
+                console.log('event', JSON.stringify(event, null, 2));
+
+                if (event.keg_capacity_liters < 5) {
+                  var error = {
+                    code: "NotFound",
+                    message: "The requested resource was not found"
+                  };
+                  context.done(JSON.stringify(error));
+                } else {
+                  context.done(null, {result: 'success'});
+                }
+              };
+            - endpoint: { Ref: IotEndpoint }
 
       Description: A sbs-keg-reset function
       Handler: index.handler
       Role:
         "Fn::GetAtt": [LambdaExecutionRole, Arn]
-      Runtime: python2.7
+      Runtime: nodejs6.10
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
