@@ -11,19 +11,20 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-      Code:
         ZipFile:
-          "Fn::Join":
-            - "\n"
-            - - "import json"
-              - "def handler(event, context):"
-              - "    print('Event: ' + json.dumps(event))"
-              - "    print('Context:' + str(dir(context)))"
-              - "    message = 'World'"
-              - "    if 'name' in event and len(event['name']):"
-              - "        message = event['name']"
-              - "    return { 'myresource': 'HELLO, ' + message + '!' }"
-      Description: A myresource function
+          "Fn::Sub": |
+            import json
+            import logging
+            logging.basicConfig()
+            logger = logging.getLogger(__name__)
+            logger.setLevel(logging.INFO)
+
+            def handler(event, context):
+                logger.info('Event: ' + json.dumps(event))
+                logger.info('Context: ' + str(dir(context)))
+                return {'sbs-keg-reset': event}
+
+      Description: A sbs-keg-reset function
       Handler: index.handler
       Role:
         "Fn::GetAtt": [LambdaExecutionRole, Arn]
@@ -140,7 +141,7 @@ Resources:
       ParentId:
         "Fn::GetAtt": [GatewayApi, RootResourceId]
       # PathPart: "{proxy+}"
-      PathPart: myresource
+      PathPart: sbs-keg-reset
 
   KegResetModel:
     Type: AWS::ApiGateway::Model
@@ -216,11 +217,11 @@ Outputs:
     Value:
       "Fn::Join":
         - ""
-        - - "curl "
+        - - 'curl -H "Content-Type: application/json" -H "Accept: application/json" '
+          - '-X POST -d ''{"keg_capacity_liters":20, "beer_name":"Blanche de Chambly", "beer_brewery": "Unibroue", "beer_description": "Glorious."}'' '
           - "https://"
           - { Ref: "GatewayApi" }
           - .execute-api.
           - { Ref: "AWS::Region" }
           - ".amazonaws.com"
-          - "/LATEST/myresource"
-          - "?value=foobar"
+          - "/LATEST/sbs-keg-reset"
