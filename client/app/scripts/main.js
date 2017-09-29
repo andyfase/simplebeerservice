@@ -25,11 +25,14 @@ software license above.
 
 /* CONSTANTS */
 // ============ CHANGE THESE VALUES BELOW =============== //
-var COGNITO_IDENTITY_POOL = '<ID>';
-var IOT_REGION = 'us-east-1';
+// var COGNITO_IDENTITY_POOL = 'us-east-1:71cf65e1-ca17-49f8-8061-647dc002730c';
+// var COGNITO_IDENTITY_POOL = 'us-east-1:20bacd1f-0e04-4b75-9b60-448d5b5e1117';
+var COGNITO_IDENTITY_POOL = '<COGNITO ID>';
+// var IOT_REGION = 'us-east-1';
+var IOT_REGION = 'us-west-2';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
-var TOPIC = 'simpleBeerEdison';
-var THINGNAME = 'simpleBeerEdisonThing';
+var TOPIC = 'sbs-data';
+var THINGNAME = '+'; // to support multiple sbs
 var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/documents';
 
 // ============ REST OF CODE =============== //
@@ -124,10 +127,26 @@ $( document ).ready(function() {
           if (sbsUnits[sbsID]===undefined) {
            var response = JSON.parse(data.payload);
            console.log('response:',response)
-           sbsUnits[sbsID] = { 'flow': new TimeSeries(), 'sound': new TimeSeries(), 'timestamp': new Date().getTime(), 'meta': response.state.desired};
+           sbsUnits[sbsID] = {
+             'flow': new TimeSeries(),
+             'sound': new TimeSeries(),
+             'timestamp': new Date().getTime(),
+             'meta': response.state.desired,
+             'kegdata': {}
+           };
            console.log('sbsUnits[sbsID].meta:',sbsUnits[sbsID].meta)
            flow.addTimeSeries(sbsUnits[sbsID]['flow'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
            sound.addTimeSeries(sbsUnits[sbsID]['sound'], { strokeStyle: colorToStyle(sbsUnits[sbsID].meta.color, 1), fillStyle: colorToStyle(sbsUnits[sbsID].meta.color, 0), lineWidth: 3 });
+
+           var meta = sbsUnits[sbsID].meta;
+           var beerlevel = 0;
+           try{
+             beerlevel = ((meta.kegdata.size - meta.kegdata.usage) / meta.kegdata.size) * 100;;
+             beerlevel = Math.ceil(beerlevel);
+           } catch (e) {
+             console.log(e);
+           }
+
            if(elementCount%2==0){
             //  $('#legend').append('<div class="w-100"></div>');
            }
@@ -137,7 +156,7 @@ $( document ).ready(function() {
                       '<div id="colorblock" style="background:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+';">'+
                       '</div>'+
                       '<div id="legend-location">'+
-                        '<div id="short">'+sbsUnits[sbsID].meta.short+'</div>'+
+                        '<div id="short">'+sbsID+'</div>'+
                         '<div id="legend-temp-humidity">'+
                           '<div id="temp"><span class="placeholder-title">TEMP</span><span class="value"><div id="temperature-'+sbsID+'-value">0</div>°C</span></div>'+
                           '<div id="humidity"><span class="placeholder-title">HUMIDITY</span><span class="value"><div id="humidity-'+sbsID+'-value">0</div>%</span></div>'+
@@ -145,16 +164,16 @@ $( document ).ready(function() {
                       '</div>'+
                       '<div id="dht">'+
                         '<div id="description-row">'+
-                          '<div id="beer-logo"><img class="beer-logo" id="beerlogo-'+sbsID+'-value"></img></div>'+
+                          '<div id="beer-logo"><img class="beer-logo" id="beerlogo-'+sbsID+'-value" src="'+sbsUnits[sbsID].meta.kegdata.logo+'"></img></div>'+
                           '<div id="beer-brewery">'+
-                            '<div id="beer"><span class="placeholder-title">BEER NAME</span><span class="value" id="beername-'+sbsID+'-value">Beer name</span></div>'+
+                            '<div id="beer"><span class="placeholder-title">BEER NAME</span><span class="value" id="beername-'+sbsID+'-value">'+sbsUnits[sbsID].meta.kegdata.name+'</span></div>'+
                             // '<div class="location"><img class="country-flag" src="http://www.geonames.org/flags/x/'+sbsUnits[sbsID].meta.location.toLowerCase()+'.gif"/></div>'+
-                            '<div id="brewery"><span class="placeholder-title">BREWERY</span><span class="value" id="brewery-'+sbsID+'-value">Brewery</span></div>'+
+                            '<div id="brewery"><span class="placeholder-title">BREWERY</span><span class="value" id="brewery-'+sbsID+'-value">'+sbsUnits[sbsID].meta.kegdata.brewery+'</span></div>'+
                           '</div>' +
                         '</div>'+
                         '<div id="beerlevel"><span class="placeholder-title">BEER LEVEL</span>'+
                           '<div id="progress">' +
-                            '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuemin="0" aria-valuemax="100">25%</div>' +
+                            '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuenow="'+beerlevel+'" aria-valuemin="0" aria-valuemax="100" style="width:'+beerlevel+'%">'+beerlevel+'%</div>' +
                           '</div>' +
                         '</div>'+
                       '</div>'+
@@ -189,16 +208,26 @@ function update(sbsID, value, type) {
 
     if (type==='sound'||type==='flow') {
       sbsUnits[sbsID][type].append(Date.now(), value);
-    } else if (type==='beerlevel') {
+    // } else if (type==='size' || type ==='usage') {
+    } else if (type==='kegdata') {
       // debugger;
-      $('#' + type + '-'+sbsID+'-value').attr("aria-valuenow",value);
-      $('#' + type + '-'+sbsID+'-value').width(value + "%");
-      $('#' + type + '-'+sbsID+'-value').html(value + "%");
+      sbsUnits[sbsID]['kegdata'] = value;
+
+      var size = sbsUnits[sbsID]['kegdata']['size'];
+      var usage = sbsUnits[sbsID]['kegdata']['usage'];
+      var beerlevel = ((size - usage) / size) * 100;;
+
+      $('#' + type + '-'+sbsID+'-value').attr('aria-valuenow',beerlevel);
+      $('#' + type + '-'+sbsID+'-value').width(beerlevel + '%');
+      $('#' + type + '-'+sbsID+'-value').html(beerlevel + '%');
+
+      $('#' + 'beerlogo' + '-' + sbsID + '-value').attr('src',sbsUnits[sbsID]['kegdata']['logo']);
+      $('#' + 'beername' + '-' + sbsID + '-value').html(sbsUnits[sbsID]['kegdata']['name']);
+      $('#' + 'brewery' + '-' + sbsID + '-value').html(sbsUnits[sbsID]['kegdata']['brewery']);
+
     } else {
       $('#' + type + '-'+sbsID+'-value').html(value);
     }
-
-    $('#' + 'beerlogo' + '-' + sbsID + '-value').attr("src","https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Beer_mug.svg/1024px-Beer_mug.svg.png");
 
 }
 
@@ -226,7 +255,7 @@ function update(sbsID, value, type) {
 
 function resizeCanvas() {
 
-    var rightPanelHeight = $("#navbar").position().top;
+    var rightPanelHeight = $('#navbar').position().top;
     var legendExpectedHeight = rightPanelHeight * 0.6;
 
     var graphPanelHeight = rightPanelHeight - legendExpectedHeight;
@@ -236,49 +265,49 @@ function resizeCanvas() {
 
     if(windowsWidth>576){
 
-      $("#legend").css("min-height", function(){
+      $('#legend').css('min-height', function(){
         return legendExpectedHeight;
       });
 
-      var leftPanelWidth = $("#left-panel").innerWidth();
+      var leftPanelWidth = $('#left-panel').innerWidth();
       var rightPanelWidth = windowsWidth - leftPanelWidth - rightPanelMargin;
 
       var canvasWidth = rightPanelWidth/2;
 
-      $("#flow").attr("width", canvasWidth);
-      $("#sound").attr("width", canvasWidth);
+      $('#flow').attr('width', canvasWidth);
+      $('#sound').attr('width', canvasWidth);
 
-      var h1Height = $("#flow-h1").outerHeight(true);
+      var h1Height = $('#flow-h1').outerHeight(true);
       var canvasHeight = graphPanelHeight - h1Height;
 
-      $("#flow").attr("height", canvasHeight);
-      $("#sound").attr("height", canvasHeight);
+      $('#flow').attr('height', canvasHeight);
+      $('#sound').attr('height', canvasHeight);
 
       console.log(canvasWidth, canvasHeight);
 
     } else {
 
-      $("#legend").css("min-height", function(){
+      $('#legend').css('min-height', function(){
         return 0;
       });
 
       var rightPanelWidth = windowsWidth - rightPanelMargin;
       var canvasWidth = rightPanelWidth;
 
-      $("#flow").attr("width", canvasWidth);
-      $("#sound").attr("width", canvasWidth);
+      $('#flow').attr('width', canvasWidth);
+      $('#sound').attr('width', canvasWidth);
 
-      var h1Height = $("#flow-h1").outerHeight(true);
+      var h1Height = $('#flow-h1').outerHeight(true);
       var canvasHeight = graphPanelHeight/2 - h1Height;
 
-      $("#flow").attr("height", canvasHeight);
-      $("#sound").attr("height", canvasHeight);
+      $('#flow').attr('height', canvasHeight);
+      $('#sound').attr('height', canvasHeight);
 
       console.log(canvasWidth, canvasHeight);
 
     }
 
-    $("#twtimeline").attr("height", $(window).height() - $("#logo-title").height());
+    $('#twtimeline').attr('height', $(window).height() - $('#logo-title').height());
 }
 
 function setBackground() {
@@ -325,7 +354,7 @@ const initMqttClient = (requestUrl, clientId, topic, onMessageArrivedCallback ) 
 
 function initClient(requestUrl) {
 
-  initMqttClient(requestUrl, String(Math.random()).replace('.', ''), TOPIC + "/#",
+  initMqttClient(requestUrl, String(Math.random()).replace('.', ''), TOPIC + '/#',
     (message) => {
       //  console.log(message.payloadString);
        var record = JSON.parse(message.payloadString);
@@ -351,10 +380,10 @@ function initClient(requestUrl) {
     initMqttClient(requestUrl, String(Math.random()).replace('.', ''), SHADOWTOPIC,
       (message) => {
         // debugger;
-        //  console.log(message.payloadString);
+         console.log(message.payloadString);
          var record = JSON.parse(message.payloadString);
 
-         var deviceId = record.current.state.desired.deviceId;
+         var deviceId = record.current.state.reported.config.thingName;
 
          if (deviceId===undefined) {
            console.log('Record format incorrect, or missing SBSID.');
@@ -362,7 +391,7 @@ function initClient(requestUrl) {
          async.series([
            function(callback) {
             //  debugger;
-             var deviceId = record.current.state.desired.deviceId;
+            //  var deviceId = record.current.state.desired.deviceId;
              // Add the unit if not already being displayed.
              if (sbsUnits[deviceId]===undefined) addSBSUnit(deviceId, callback);
              else callback(null, null);
@@ -370,10 +399,11 @@ function initClient(requestUrl) {
            function(callback) {
             //  debugger;
              // For each shadow record, update the appropriate value.
-             var data = record.current.state.desired.data;
-             for(var item in data) {
-               update(record.current.state.desired.deviceId, Math.ceil(data[item]), item);
-             };
+             var data = record.current.state.reported.kegdata;
+             update(deviceId,data,'kegdata');
+            //  for(var item in data) {
+            //     update(deviceId, Math.ceil(data[item]), item);
+            //  };
            }
          ]);
       });
