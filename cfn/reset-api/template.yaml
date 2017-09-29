@@ -28,8 +28,8 @@ Resources:
 
                 if (event.keg_capacity_liters < 5) {
                   var error = {
-                    code: "NotFound",
-                    message: "The requested resource was not found"
+                    errorCode: 400,
+                    errorMessage: "The requested resource was not found"
                   };
                   context.done(JSON.stringify(error));
                 } else {
@@ -207,13 +207,27 @@ Resources:
               - "Fn::GetAtt": [GatewayLambda, Arn]
               - "/invocations"
         IntegrationResponses:
-        - StatusCode: 200
+          - StatusCode: 200
+          - StatusCode: 400
+            SelectionPattern: '.*"errorCode":400.*'
+            ResponseTemplates:
+              "application/json":
+                "Fn::Sub": |
+                  #set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+                  #set ($bodyObj = $util.parseJson($input.body))
+
+                  {
+                    "errorCode": $errorMessageObj.errorCode,
+                    "errorMessage": "$errorMessageObj.errorMessage"
+                  }
+
       RequestModels:
         "application/json": { Ref: KegResetModel }
       ResourceId: { Ref: "MyResource" }
       RestApiId: { Ref: "GatewayApi" }
       MethodResponses:
-      - StatusCode: 200
+        - StatusCode: 200
+        - StatusCode: 400
 
 Outputs:
   RootUrl:
