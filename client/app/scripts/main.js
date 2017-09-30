@@ -25,11 +25,8 @@ software license above.
 
 /* CONSTANTS */
 // ============ CHANGE THESE VALUES BELOW =============== //
-// var COGNITO_IDENTITY_POOL = 'us-east-1:71cf65e1-ca17-49f8-8061-647dc002730c';
-var COGNITO_IDENTITY_POOL = 'us-east-1:20bacd1f-0e04-4b75-9b60-448d5b5e1117';
-// var COGNITO_IDENTITY_POOL = 'us-west-2:706cef52-37f4-4a9c-8aea-b7ceed3e87e1';
+var COGNITO_IDENTITY_POOL = '<COGNITO ID>';
 var IOT_REGION = 'us-east-1';
-// var IOT_REGION = 'us-west-2';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
 var TOPIC = 'simpleBeerEdisonTopic';
 var THINGNAME = '+'; // to support multiple sbs
