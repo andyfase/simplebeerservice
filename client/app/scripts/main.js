@@ -26,12 +26,12 @@ software license above.
 /* CONSTANTS */
 // ============ CHANGE THESE VALUES BELOW =============== //
 // var COGNITO_IDENTITY_POOL = 'us-east-1:71cf65e1-ca17-49f8-8061-647dc002730c';
-// var COGNITO_IDENTITY_POOL = 'us-east-1:20bacd1f-0e04-4b75-9b60-448d5b5e1117';
-var COGNITO_IDENTITY_POOL = '<COGNITO ID>';
-// var IOT_REGION = 'us-east-1';
-var IOT_REGION = 'us-west-2';
+var COGNITO_IDENTITY_POOL = 'us-east-1:20bacd1f-0e04-4b75-9b60-448d5b5e1117';
+// var COGNITO_IDENTITY_POOL = 'us-west-2:706cef52-37f4-4a9c-8aea-b7ceed3e87e1';
+var IOT_REGION = 'us-east-1';
+// var IOT_REGION = 'us-west-2';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
-var TOPIC = 'sbs-data';
+var TOPIC = 'simpleBeerEdisonTopic';
 var THINGNAME = '+'; // to support multiple sbs
 var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/documents';
 
@@ -173,8 +173,10 @@ $( document ).ready(function() {
                         '</div>'+
                         '<div id="beerlevel"><span class="placeholder-title">BEER LEVEL</span>'+
                           '<div id="progress">' +
-                            '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuenow="'+beerlevel+'" aria-valuemin="0" aria-valuemax="100" style="width:'+beerlevel+'%">'+beerlevel+'%</div>' +
+                            '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuenow="'+beerlevel+'" aria-valuemin="0" aria-valuemax="100" style="width:'+beerlevel+'%;background-color:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+'">'+
+                            '</div>' +
                           '</div>' +
+                          '<span id="beerlevel-label-'+sbsID+'-value">' + beerlevel+'% beer left</span>'+
                         '</div>'+
                       '</div>'+
                     '</div>'+
@@ -215,11 +217,21 @@ function update(sbsID, value, type) {
 
       var size = sbsUnits[sbsID]['kegdata']['size'];
       var usage = sbsUnits[sbsID]['kegdata']['usage'];
-      var beerlevel = ((size - usage) / size) * 100;;
 
-      $('#' + type + '-'+sbsID+'-value').attr('aria-valuenow',beerlevel);
-      $('#' + type + '-'+sbsID+'-value').width(beerlevel + '%');
-      $('#' + type + '-'+sbsID+'-value').html(beerlevel + '%');
+      console.log('size:', size, ',usage:', usage);
+
+      var beerlevel = 0;
+
+      try{
+        beerlevel = ((size - usage) / size) * 100;;
+        beerlevel = Math.ceil(beerlevel);
+      } catch (e) {
+        console.log(e);
+      }
+      console.log(beerlevel);
+      $('#beerlevel' + '-'+sbsID+'-value').attr('aria-valuenow',beerlevel);
+      $('#beerlevel' + '-'+sbsID+'-value').width(beerlevel + '%');
+      $('#beerlevel-label' + '-'+sbsID+'-value').html(beerlevel + '% beer left');
 
       $('#' + 'beerlogo' + '-' + sbsID + '-value').attr('src',sbsUnits[sbsID]['kegdata']['logo']);
       $('#' + 'beername' + '-' + sbsID + '-value').html(sbsUnits[sbsID]['kegdata']['name']);
@@ -397,7 +409,6 @@ function initClient(requestUrl) {
              else callback(null, null);
            },
            function(callback) {
-            //  debugger;
              // For each shadow record, update the appropriate value.
              var data = record.current.state.reported.kegdata;
              update(deviceId,data,'kegdata');

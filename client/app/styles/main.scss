@@ -14,13 +14,6 @@ software license above.
  *******************/
 $icon-font-path: '../fonts/'; // bower:scss
 @import "bower_components/bootstrap/scss/bootstrap.scss";
-@font-face {
-  font-family: 'typicons';
-  src: url("bower_components/typicons.font/src/font/typicons.eot");
-  src: url("bower_components/typicons.font/src/font/typicons.eot?#iefix") format('embedded-opentype'), url("bower_components/typicons.font/src/font/typicons.woff") format('woff'), url("bower_components/typicons.font/src/font/typicons.ttf") format('truetype'), url("bower_components/typicons.font/src/font/typicons.svg#typicons") format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
 
 body,
 html {
@@ -44,22 +37,6 @@ h2 {
   font-size: 1pc;
   font-weight: 200;
   margin-top: 6px;
-}
-
-.typicon {
-  font-family: 'typicons';
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  margin-right: 2px;
-  text-decoration: inherit;
-  width: 1em;
-  height: 1em;
-  font-size: 1em;
-  text-align: center;
-  -webkit-font-smoothing: antialiased;
-  font-smoothing: antialiased;
 }
 
 .wrapper {
@@ -280,29 +257,51 @@ h2 {
                 .placeholder-title {
                   @extend .d-none;
                 }
+              }
 
-                @include media-breakpoint-down(sm) {
+              @include media-breakpoint-down(sm) {
+                #beer {
                   .value {
                     font-size: 10px;
                     display: block;
                   }
                 }
-                @include media-breakpoint-up(sm) {
+                #brewery {
+                  .value {
+                    font-size: 8px;
+                    display: block;
+                  }
+                }
+              }
+              @include media-breakpoint-up(sm) {
+                #beer {
                   .value {
                     font-size: 12px;
                     display: block;
                   }
                 }
-                @include media-breakpoint-up(lg) {
+                #brewery {
+                  .value {
+                    font-size: 10px;
+                    display: block;
+                  }
+                }
+
+              }
+              @include media-breakpoint-up(lg) {
+                #beer {
                   .value {
                     font-size: 14px;
                     display: flex;
                   }
                 }
+                #brewery {
+                  .value {
+                    font-size: 12px;
+                    display: block;
+                  }
+                }
               }
-
-              #beer {}
-
             }
           }
 
@@ -319,11 +318,20 @@ h2 {
             @extend .p-md-0;
             @extend .p-lg-0;
             @extend .p-xl-0;
+
             @extend .pt-1;
             @extend .pt-sm-1;
             @extend .pt-md-1;
             @extend .pt-lg-1;
             @extend .pt-xl-1;
+
+            @extend .pb-1;
+            @extend .pb-sm-1;
+            @extend .pb-md-1;
+            @extend .pb-lg-1;
+            @extend .pb-xl-1;
+
+            @extend .row;
 
             .placeholder-title {
               @extend .d-none;
@@ -342,12 +350,52 @@ h2 {
               @extend .p-lg-0;
               @extend .p-xl-0;
 
+              @extend .col-8;
+
               div {
                 @extend .progress-bar;
                 @extend .progress-bar-striped;
                 @extend .progress-bar-animated;
                 @extend .align-middle;
                 height: 4vh;
+              }
+            }
+            span {
+
+              @extend .m-0;
+              @extend .m-sm-0;
+              @extend .m-md-0;
+              @extend .m-lg-0;
+              @extend .m-xl-0;
+
+              @extend .p-0;
+              @extend .p-sm-0;
+              @extend .p-md-0;
+              @extend .p-lg-0;
+              @extend .p-xl-0;
+
+              @extend .pl-1;
+              @extend .pl-sm-1;
+              @extend .pl-md-1;
+              @extend .pl-lg-1;
+              @extend .pl-xl-1;
+
+              @extend .pr-1;
+              @extend .pr-sm-1;
+              @extend .pr-md-1;
+              @extend .pr-lg-1;
+              @extend .pr-xl-1;
+
+              @extend .col-4;
+
+              display: inline-block;
+              vertical-align: middle;
+
+              @include media-breakpoint-down(sm) {
+                font-size: 10px;
+              }
+              @include media-breakpoint-up(sm) {
+                font-size: 12px;
               }
             }
           }
