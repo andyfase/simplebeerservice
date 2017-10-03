@@ -138,6 +138,8 @@ h2 {
           @extend .col-lg-4;
           @extend .col-xl-4;
           @extend .border;
+          @extend .border-top-0;
+          @extend .border-bottom-0;
           @extend .m-0;
           @extend .m-sm-0;
           @extend .m-md-0;
@@ -184,10 +186,14 @@ h2 {
               @extend .p-xl-1;
               @extend .border;
               @extend .col;
-              @extend .align-self-center;
 
-              .placeholder-title{
+              @extend .row;
 
+              .placeholder-title,.value{
+                width: 100%;
+                @extend .text-center;
+                @extend .align-self-center;
+                overflow-wrap: normal;
               }
 
               @include media-breakpoint-down(sm) {
@@ -350,7 +356,7 @@ h2 {
               @extend .p-lg-0;
               @extend .p-xl-0;
 
-              @extend .col-8;
+              @extend .col-12;
 
               div {
                 @extend .progress-bar;
@@ -359,45 +365,49 @@ h2 {
                 @extend .align-middle;
                 height: 4vh;
               }
-            }
-            span {
 
-              @extend .m-0;
-              @extend .m-sm-0;
-              @extend .m-md-0;
-              @extend .m-lg-0;
-              @extend .m-xl-0;
+              .beerlevel-label {
+                color: black;
+                position: absolute;
+                vertical-align: middle;
+                right: 0px;
+                top: 4px;
 
-              @extend .p-0;
-              @extend .p-sm-0;
-              @extend .p-md-0;
-              @extend .p-lg-0;
-              @extend .p-xl-0;
+                @extend .m-0;
+                @extend .m-sm-0;
+                @extend .m-md-0;
+                @extend .m-lg-0;
+                @extend .m-xl-0;
 
-              @extend .pl-1;
-              @extend .pl-sm-1;
-              @extend .pl-md-1;
-              @extend .pl-lg-1;
-              @extend .pl-xl-1;
+                @extend .p-0;
+                @extend .p-sm-0;
+                @extend .p-md-0;
+                @extend .p-lg-0;
+                @extend .p-xl-0;
 
-              @extend .pr-1;
-              @extend .pr-sm-1;
-              @extend .pr-md-1;
-              @extend .pr-lg-1;
-              @extend .pr-xl-1;
+                @extend .pl-1;
+                @extend .pl-sm-1;
+                @extend .pl-md-1;
+                @extend .pl-lg-1;
+                @extend .pl-xl-1;
 
-              @extend .col-4;
+                @extend .pr-1;
+                @extend .pr-sm-1;
+                @extend .pr-md-1;
+                @extend .pr-lg-1;
+                @extend .pr-xl-1;
 
-              display: inline-block;
-              vertical-align: middle;
+                // @extend .col-4;
 
-              @include media-breakpoint-down(sm) {
-                font-size: 10px;
+                @include media-breakpoint-down(sm) {
+                  font-size: 8px;
+                }
+                @include media-breakpoint-up(sm) {
+                  font-size: 10px;
+                }
               }
-              @include media-breakpoint-up(sm) {
-                font-size: 12px;
-              }
             }
+
           }
         }
       }

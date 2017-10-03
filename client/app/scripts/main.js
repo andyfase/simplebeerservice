@@ -28,7 +28,7 @@ software license above.
 var COGNITO_IDENTITY_POOL = '<COGNITO ID>';
 var IOT_REGION = 'us-east-1';
 var IOTENDPOINT = 'data.iot.'+IOT_REGION+'.amazonaws.com';
-var TOPIC = 'simpleBeerEdisonTopic';
+var TOPIC = 'sbs';
 var THINGNAME = '+'; // to support multiple sbs
 var SHADOWTOPIC = '$aws/things/' + THINGNAME + '/shadow/update/documents';
 
@@ -97,6 +97,8 @@ $( document ).ready(function() {
           'iotdevicegateway', IOT_REGION,
           credentials.accessKeyId, credentials.secretAccessKey, credentials.sessionToken);
       initClient(requestUrl);
+
+
   });
 
 });
@@ -139,7 +141,7 @@ $( document ).ready(function() {
            var beerlevel = 0;
            try{
              beerlevel = ((meta.kegdata.size - meta.kegdata.usage) / meta.kegdata.size) * 100;;
-             beerlevel = Math.ceil(beerlevel);
+             beerlevel = Math.round(beerlevel);
            } catch (e) {
              console.log(e);
            }
@@ -155,8 +157,8 @@ $( document ).ready(function() {
                       '<div id="legend-location">'+
                         '<div id="short">'+sbsID+'</div>'+
                         '<div id="legend-temp-humidity">'+
-                          '<div id="temp"><span class="placeholder-title">TEMP</span><span class="value"><div id="temperature-'+sbsID+'-value">0</div>°C</span></div>'+
-                          '<div id="humidity"><span class="placeholder-title">HUMIDITY</span><span class="value"><div id="humidity-'+sbsID+'-value">0</div>%</span></div>'+
+                          '<div id="temp"><div class="placeholder-title">TEMP</div><div class="value" id="temperature-'+sbsID+'-value">0°C</div></div>'+
+                          '<div id="humidity"><div class="placeholder-title">HUMIDITY</div><div class="value" id="humidity-'+sbsID+'-value">0%</div></div>'+
                         '</div>'+
                       '</div>'+
                       '<div id="dht">'+
@@ -172,8 +174,8 @@ $( document ).ready(function() {
                           '<div id="progress">' +
                             '<div id="beerlevel-'+sbsID+'-value" role="progressbar" aria-valuenow="'+beerlevel+'" aria-valuemin="0" aria-valuemax="100" style="width:'+beerlevel+'%;background-color:'+colorToStyle(sbsUnits[sbsID].meta.color, 1)+'">'+
                             '</div>' +
+                            '<span class="beerlevel-label" id="beerlevel-label-'+sbsID+'-value">' + beerlevel+'% beer left</span>'+
                           '</div>' +
-                          '<span id="beerlevel-label-'+sbsID+'-value">' + beerlevel+'% beer left</span>'+
                         '</div>'+
                       '</div>'+
                     '</div>'+
@@ -207,9 +209,7 @@ function update(sbsID, value, type) {
 
     if (type==='sound'||type==='flow') {
       sbsUnits[sbsID][type].append(Date.now(), value);
-    // } else if (type==='size' || type ==='usage') {
     } else if (type==='kegdata') {
-      // debugger;
       sbsUnits[sbsID]['kegdata'] = value;
 
       var size = sbsUnits[sbsID]['kegdata']['size'];
@@ -221,7 +221,7 @@ function update(sbsID, value, type) {
 
       try{
         beerlevel = ((size - usage) / size) * 100;;
-        beerlevel = Math.ceil(beerlevel);
+        beerlevel = Math.round(beerlevel);
       } catch (e) {
         console.log(e);
       }
@@ -233,7 +233,10 @@ function update(sbsID, value, type) {
       $('#' + 'beerlogo' + '-' + sbsID + '-value').attr('src',sbsUnits[sbsID]['kegdata']['logo']);
       $('#' + 'beername' + '-' + sbsID + '-value').html(sbsUnits[sbsID]['kegdata']['name']);
       $('#' + 'brewery' + '-' + sbsID + '-value').html(sbsUnits[sbsID]['kegdata']['brewery']);
-
+    } else if (type==='temperature') {
+      $('#temperature-'+sbsID+'-value').html(value + "°C");
+    } else if (type==='humidity') {
+      $('#humidity-'+sbsID+'-value').html(value + "%");
     } else {
       $('#' + type + '-'+sbsID+'-value').html(value);
     }
