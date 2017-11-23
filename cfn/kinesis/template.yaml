@@ -93,8 +93,8 @@ Resources:
 
                       shadow.state.desired.kegdata.usage += results[thing_name];
 
-                      if (shadow.state.desired.kegdata.usage < 0) {
-                        console.error('Negative beer level set for ' + thing_name + ' . Calibration required?');
+                      if (shadow.state.desired.kegdata.usage >  shadow.state.desired.kegdata.size) {
+                        shadow.state.desired.kegdata.usage = shadow.state.desired.kegdata.size
                       }
 
                       var params = {
@@ -104,11 +104,11 @@ Resources:
 
                       iotdata.updateThingShadow(params, function(err, data) {
                         numRunningAsync--;
-                        console.log('Intended new shadow for ' + thing_name, JSON.stringify(shadow, null, 2));
+                        console.log('Intended new shadow for ' + thing_name);
                         if (err) {
                           console.log(err, err.stack);
                         } else {
-                          console.log('Updated shadow successfully for ' + thing_name, JSON.stringify(data, null, 2));
+                          console.log('Updated shadow successfully for ' + thing_name);
 
                           if (numRunningAsync === 0) {
                             callback(null, 'done');
